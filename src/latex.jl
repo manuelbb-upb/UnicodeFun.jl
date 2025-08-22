@@ -9,6 +9,8 @@ function print_modifier(io, mod, substring)
         to_boldface(io, substring)
     elseif mod == "it"
         to_italic(io, substring)
+    elseif mod == "bfit"
+        to_bolditalic(io, substring)
     elseif mod == "cal"
         to_caligraphic(io, substring)
     elseif mod == "frak"
