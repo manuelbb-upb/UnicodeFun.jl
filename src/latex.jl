@@ -50,7 +50,7 @@ function to_latex(text)
             mod = string(char)
             if mod == "\\"
                 ss = SubString(text, idx, lastindex(text))
-                for mod_candidate in ("bb", "bf", "it", "cal", "frak", "mono")
+                for mod_candidate in ("bb", "bfit", "bf", "it", "cal", "frak", "mono")  # `bfit` has to come before `bf`
                     if startswith(ss, mod_candidate)
                         mod = mod_candidate
                         break
