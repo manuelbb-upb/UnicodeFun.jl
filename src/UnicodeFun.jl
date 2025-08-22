@@ -19,6 +19,7 @@ export to_caligraphic
 export to_frakture
 export to_underline
 export to_overline
+export to_bolditalic
 
 include("latex.jl")
 export to_latex
