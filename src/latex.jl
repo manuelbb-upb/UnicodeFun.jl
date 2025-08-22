@@ -17,6 +17,8 @@ function print_modifier(io, mod, substring)
         to_frakture(io, substring)
     elseif mod == "mono"
         to_mono(io, substring) # leave unmodified for now
+    elseif mod in sym_modifiers
+        print_sym_modifier(io, mod, substring)
     else
         error("Modifier $mod not supported")
     end
@@ -50,7 +52,10 @@ function to_latex(text)
             mod = string(char)
             if mod == "\\"
                 ss = SubString(text, idx, lastindex(text))
-                for mod_candidate in ("bb", "bfit", "bf", "it", "cal", "frak", "mono")  # `bfit` has to come before `bf`
+                for mod_candidate in (
+                    ("bb", "bfit", "bf", "it", "cal", "frak", "mono")...,  # `bfit` has to come before `bf`
+                    sym_modifiers...
+                )
                     if startswith(ss, mod_candidate)
                         mod = mod_candidate
                         break

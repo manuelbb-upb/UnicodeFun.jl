@@ -24,6 +24,8 @@ export to_bolditalic
 include("latex.jl")
 export to_latex
 
+include("ucm.jl")
+
 include("roots.jl")
 export to_root
 
