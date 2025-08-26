@@ -1,23 +1,28 @@
 # This file contains LaTeX commands originally
 # defined in source file `unicode-math-table.tex`
 # of the UNICODE-MATH package  <wspr.io/unicode-math>
-# by
+
+# Find below the original license statement: 
+
+# /©
+#
+# ------------------------------------------------
+# The UNICODE-MATH package  <wspr.io/unicode-math>
+# ------------------------------------------------
+# This package is free software and may be redistributed and/or modified under
+# the conditions of the LaTeX Project Public License, version 1.3c or higher
+# (your choice): <http://www.latex-project.org/lppl/>.
+# ------------------------------------------------
 # Copyright 2006-2019  Will Robertson, LPPL "maintainer"
 # Copyright 2010-2017  Philipp Stephani
 # Copyright 2011-2017  Joseph Wright
 # Copyright 2012-2015  Khaled Hosny
+# ------------------------------------------------
+#
+# ©/
 
-# The contents of this file are licensed accordingly:
-#
+# For this Julia file, the copyright statement is:
 # Copyright 2025 M. Berkemeier
-#
-# The contents of this file may be distributed and/or modified under the
-# conditions of the LaTeX Project Public License, either version 1.3
-# of this license or (at your option) any later version.
-#  The latest version of this license is in
-#   https://www.latex-project.org/lppl.txt
-# and version 1.3c or later is part of all distributions of LaTeX
-# version 2008 or later.
 
 struct UCMCommand 
     latex_cmd :: String

@@ -1,22 +1,27 @@
 # This file takes inspiration from source file `um-code-usv.dtx`
 # of the UNICODE-MATH package  <wspr.io/unicode-math>
-# by
+#
+# Find below the original license statement: 
+
+# /©
+#
+# ------------------------------------------------
+# The UNICODE-MATH package  <wspr.io/unicode-math>
+# ------------------------------------------------
+# This package is free software and may be redistributed and/or modified under
+# the conditions of the LaTeX Project Public License, version 1.3c or higher
+# (your choice): <http://www.latex-project.org/lppl/>.
+# ------------------------------------------------
 # Copyright 2006-2019  Will Robertson, LPPL "maintainer"
 # Copyright 2010-2017  Philipp Stephani
 # Copyright 2011-2017  Joseph Wright
 # Copyright 2012-2015  Khaled Hosny
+# ------------------------------------------------
+#
+# ©/
 
-# The contents of this file are licensed accordingly:
-#
+# For this Julia file, the copyright statement is:
 # Copyright 2025 M. Berkemeier
-#
-# The contents of this file may be distributed and/or modified under the
-# conditions of the LaTeX Project Public License, either version 1.3
-# of this license or (at your option) any later version.
-#  The latest version of this license is in
-#   https://www.latex-project.org/lppl.txt
-# and version 1.3c or later is part of all distributions of LaTeX
-# version 2008 or later.
 
 # We generate two "tables" in here:
 #
@@ -37,7 +42,6 @@ mutable struct UCMChar
     name :: String
     char :: Char
     char_range :: Symbol
-    latex_cmd :: String
     style :: Symbol
 end
 
@@ -45,72 +49,36 @@ function Base.show(io::IO, ucmchar::UCMChar)
     print(io, "UCMChar('$(ucmchar.char)')")
 end
 
-const cmd_prefixes = Base.ImmutableDict(
-    :up => "",
-    :it => "mit",
-    :bfup => "mbf",
-    :bfit => "mbfit",
-    :sfup => "msans",
-    :sfit => "mitsans",
-    :bfsfup => "mbfit",
-    :bfsfit => "mbfitsans",
-    :cal => "mscr",
-    :bfcal => "mbfscr",
-    :bb => "Bbb",
-    :frak => "mfrak",
-    :bffrak => "mbffrak",
-    :tt => "mtt"
-)
-
 function UCMChar(; name, char, char_range, style)
-    global cmd_prefixes
     name = string(name)
-    if style == :up && (char_range == :Latin || char_range == :latin || char_range == :num)
-        latex_cmd = name
-    else
-        suffix = if char_range == :num 
-            if name == "0"
-                "zero"
-            elseif name == "1"
-                "one"
-            elseif name == "2"
-                "two"
-            elseif name == "3"
-                "three"
-            elseif name == "4"
-                "four"
-            elseif name == "5"
-                "five"
-            elseif name == "6"
-                "six"
-            elseif name == "7"
-                "seven"
-            elseif name == "8"
-                "eight"
-            elseif name == "9"
-                "nine"
-            else
-                "UnknownNumber"
-            end
-        else
-            name
-        end
-        latex_prefix = get(cmd_prefixes, style, "")
-        latex_cmd = "\\$(latex_prefix)$(suffix)"
-    end
     return UCMChar(
-        name, char, char_range, latex_cmd, style
+        name, char, char_range, style
     )
 end
 
+## helper: "theta" ↦ "Theta", "vartheta" ↦ "varTheta" …
 _cap(n) = startswith(n, "var") ? "var" * uppercasefirst(n[4:end]) : uppercasefirst(n)
+## helper: "Theta" ↦ "theta", "varTheta" ↦ "vartheta" …
 _decap(n) = startswith(n, "var") ? "var" * lowercasefirst(n[4:end]) : lowercasefirst(n)
 
+"""
+    collect_chars(
+        char_names, usv_dict, extras_dict=Dict(); 
+        char_range, fixes=Dict())
+
+Given a vector of character names `char_names::AbstractVector{String}`, 
+and a dictionary mapping style symbols (`:up`, `:it`) to unicode points, 
+collect all the chars as `UCMChar` objects.
+The returned dict has structure `Dict(style_symb => Dict(name => ucm_char))`.
+
+* `fixes` is a global `Char`-to-`Char` dict, overwriting characters independent of style.
+* `extras_dict` can be used to overwrite characters or define additional symbols.
+"""
 function collect_chars(
-    range_symb,
     char_names,
     usv_dict,
-    extras_dict=Dict(),
+    extras_dict=Dict();
+    char_range=:UnknownRange,
     fixes=Dict{Char,Char}()
 )
     chars_dict = SpecialDict{Symbol, SpecialDict}()
@@ -118,8 +86,8 @@ function collect_chars(
     for (sn, cp) in pairs(usv_dict)
         dict_sn = SpecialDict(
             n => let ch = Char(cp + i - 1);
-                UCMChar(
-                    name=n, char=get(fixes, ch, ch), style=sn, char_range=range_symb) 
+                UCMChar(;
+                    name=n, char=get(fixes, ch, ch), style=sn, char_range)
             end for (i, n) = enumerate(char_names) 
         )
         chars_dict[sn] = dict_sn
@@ -132,7 +100,7 @@ function collect_chars(
                 dict_sn[n].char = Char(cp)
             else
                 dict_sn[n] = UCMChar(;
-                    name=n, char=Char(cp), style=sn, char_range=range_symb)
+                    name=n, char=Char(cp), style=sn, char_range)
             end
         end
 
@@ -394,25 +362,25 @@ const extras_dotless = Dict(
 
 const chars_dotless = Dict(
     :up => SpecialDict(
-        "dotlessi" => UCMChar("dotlessi", Char(0x00131), :dotless, "", :up),
-        "dotlessj" => UCMChar("dotlessi", Char(0x00237), :dotless, "", :up)
+        "dotlessi" => UCMChar("dotlessi", Char(0x00131), :dotless, :up),
+        "dotlessj" => UCMChar("dotlessi", Char(0x00237), :dotless, :up)
     ),
     :it => SpecialDict(
-        "dotlessi" => UCMChar("dotlessi", Char(0x1D6A4), :dotless, "\\imath", :it),
-        "dotlessj" => UCMChar("dotlessi", Char(0x1D6A5), :dotless, "\\jmath", :it),
+        "dotlessi" => UCMChar("dotlessi", Char(0x1D6A4), :dotless, :it),
+        "dotlessj" => UCMChar("dotlessi", Char(0x1D6A5), :dotless, :it),
     )
 )
 
 function all_chars()
-    chars_Greek = collect_chars(:Greek, names_Greek, usv_Greek, extras_Greek)
-    chars_greek = collect_chars(:greek, names_greek, usv_greek, extras_greek)
+    chars_Greek = collect_chars(names_Greek, usv_Greek, extras_Greek; char_range=:Greek)
+    chars_greek = collect_chars(names_greek, usv_greek, extras_greek; char_range=:greek)
 
-    chars_Latin = collect_chars(:Latin, names_Latin, usv_Latin, extras_Latin)
-    chars_latin = collect_chars(:latin, names_latin, usv_latin, extras_latin)
-    chars_num = collect_chars(:num, names_num, usv_num)
+    chars_Latin = collect_chars(names_Latin, usv_Latin, extras_Latin; char_range=:Latin)
+    chars_latin = collect_chars(names_latin, usv_latin, extras_latin; char_range=:latin)
+    chars_num = collect_chars(names_num, usv_num; char_range=:num)
 
-    chars_Nabla = collect_chars(:Nabla, names_Nabla, usv_Nabla)
-    chars_partial = collect_chars(:partial, names_partial, usv_partial)
+    chars_Nabla = collect_chars(names_Nabla, usv_Nabla; char_range=:Nabla)
+    chars_partial = collect_chars(names_partial, usv_partial; char_range=:partial)
 
     return Dict(
         :Greek => chars_Greek,
