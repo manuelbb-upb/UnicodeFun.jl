@@ -9,7 +9,7 @@ include("character_ranges.jl")  # `chars_by_range_style_name`
                                 # `chars_to_ucmchars`
 
 ## native styles (excluding derived styles like `bf`, `sf`, `bfsfup`):
-const all_styles = (
+const base_styles = (
     :up, :it,  
     :bfup, :bfit, 
     :sfup, :sfit, 
@@ -19,6 +19,8 @@ const all_styles = (
     :cal, :bfcal, 
     :frak, :bffrak
 )
+
+const all_styles = (base_styles..., :bf, :sf, :bfsf)
 
 function _choose_style(ucm_ch, style_symb)
     ## check if the range is key for outer dict:
@@ -227,12 +229,12 @@ function _subtitutions_dict(;
     bold_style=:literal, 
     sans_style=:italic,
 )
-    subs_up = Dict( sn => sn for sn = all_styles )
+    subs_up = Dict( sn => sn for sn = base_styles )
     subs_up[:bf] = bold_style == :upright ? :bfup : (bold_style == :italic ? :bfit : :bfup)
     subs_up[:sf] = sans_style == :upright ? :sfup : (sans_style == :italic ? :sfit : :sfup)
     subs_up[:bfsf] = sans_style == :upright ? :bfsfup : (sans_style == :italic ? :bfsfit : :bfsfup)
 
-    subs_it = Dict( sn => sn for sn = all_styles )
+    subs_it = Dict( sn => sn for sn = base_styles )
     #subs_it[:bb] = :bbit   # `blackboard_style`?
     subs_it[:bf] = bold_style == :upright ? :bfup : (bold_style == :italic ? :bfit : :bfit)
     subs_it[:sf] = sans_style == :upright ? :sfup : (sans_style == :italic ? :sfit : :sfit)
@@ -370,12 +372,61 @@ end
 
 const (default_normal_styles, default_substitutions, default_aliases) = config_dicts()
 
+const default_normal_styles_ref = Ref(default_normal_styles)
+const default_substitutions_ref = Ref(default_substitutions)
+const default_aliases_ref = Ref(default_aliases)
+
+function global_config!(; kwargs...)
+    global default_normal_styles_ref, default_substitutions_ref, default_aliases_ref
+    ns, s, a = config_dicts(; kwargs...)
+    default_normal_styles_ref[] = ns
+    default_substitutions_ref[] = s
+    default_aliases_ref[] = a
+    return (; normal_styles=ns, substitutions=s, aliases=a)
+end
+
 for fn in (:apply_style, :apply_spec_style)
     @eval function $(fn)(ch::Char, trgt_style::Symbol... ; kwargs...)
         ucm_ch = get(chars_to_ucmchars, ch, nothing)
         isnothing(ucm_ch) && return ch
         ucm_ch = $(fn)(ucm_ch, trgt_style...; kwargs...)
         return ucm_ch.char
+    end
+end
+
+function sym_style(ch::Union{Char, UCMChar}, trgt_style...)
+    global default_normal_styles_ref, default_substitutions_ref, default_aliases_ref
+
+    return apply_style(ch, trgt_style...;
+        normal_styles = default_normal_styles_ref[],
+        substitutions = default_substitutions_ref[],
+        aliases = default_aliases_ref[]
+    )
+end
+sym_style(io::IO, ch::Union{Char, UCMChar}, trgt_style...)=print(io, sym_style(ch, trgt_style...))
+function sym_style(io::IO, x::AbstractString, trgt_style...)
+    _sym_style = ch -> apply_style(
+        ch, trgt_style...;
+        normal_styles = default_normal_styles_ref[],
+        substitutions = default_substitutions_ref[],
+        aliases = default_aliases_ref[]
+    )
+    for char in x
+        print(io, _sym_style(char))
+    end
+end
+sym_style(x::AbstractString, trgt_style...) = sprint() do io
+    sym_style(io, x, trgt_style...)
+end
+
+for sn in all_styles
+    f = Symbol("sym", sn)
+    @eval begin 
+        $f(ch::Char) = sym_style(ch, $(Meta.quot(sn)))
+        $f(x::AbstractString) = sym_style(x, $(Meta.quot(sn)))
+
+        $f(io::IO, x::Char) = sym_style(io, x, $(Meta.quot(sn)))
+        $f(io::IO, x::AbstractString) = sym_style(io, x, $(Meta.quot(sn)))
     end
 end
 
