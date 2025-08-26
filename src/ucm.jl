@@ -3,6 +3,10 @@ include("UnicodeMath/UnicodeMath.jl")
 import .UnicodeMath as UM
 const (default_normal_styles, default_substitutions, default_aliases) = UM.config_dicts(; math_style=:literal) 
 
+for (cmd_symb, ucm_cmd) = pairs(UM.extra_commands)
+    push!(latex_symbol_map, string(cmd_symb) => ucm_cmd.char)
+end
+
 default_normal_styles_ref = Ref(default_normal_styles)
 default_substitutions_ref = Ref(default_substitutions)
 default_aliases_ref = Ref(default_aliases)
