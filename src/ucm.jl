@@ -1,20 +1,32 @@
 # commands similar to the `\sym...` commands in `unicode-math`
+include("UnicodeMath/UnicodeMath.jl")
+import .UnicodeMath as UM
+const (default_normal_styles, default_substitutions, default_aliases) = UM.config_dicts(; math_style=:literal) 
 
-include("usv.jl")   # dict `char_groups` for mapping unicode characters
-                    # `group_name => Dict(style_name => [char1, …, charN])`
-                    # e.g.:
-                    # `:latin` => Dict(:up => ['a', ..., 'z'])
-include("idx.jl")   # indexing dictionary `char_idx`
-                    # `char => `(group_name, pos, styles)`
+default_normal_styles_ref = Ref(default_normal_styles)
+default_substitutions_ref = Ref(default_substitutions)
+default_aliases_ref = Ref(default_aliases)
+
+function ucm_configure!(; kwargs...)
+    global default_normal_styles_ref, default_substitutions_ref, default_aliases_ref
+    ns, s, a = UM.config_dicts(; kwargs...)
+    default_normal_styles_ref[] = ns
+    default_substitutions_ref[] = s
+    default_aliases_ref[] = a
+    return nothing
+end
 
 # suffixes for font styles supported by `\sym` command
 const style_names = (
-    :up, :it, :bb, :cal, :frak, :tt,
-    :sfup, :sfit,
-    :bfup, :bfit, :bfcal, :bffrak, 
     :bfsfup, :bfsfit,
-)   # `bf` and `bfsf` not enabled due to ambiguous notation standards
-
+    :bfsf,
+    :bfup, :bfit, 
+    :bfcal, :bffrak, 
+    :sfup, :sfit,
+    :bbit,
+    :up, :it, :bb, :cal, :frak, :tt,
+    :sf, :bf, 
+)
 # modifier strings supported by `to_latex` command, e.g., `\symup`, `\symbfit` 
 const sym_modifiers = Tuple(
     "sym$(sn)" for sn in style_names
@@ -31,19 +43,16 @@ end
 
 # define functions `apply_symup`, `apply_symit` etc.
 for sn in style_names
-    f = Symbol(:apply_sym, sn)
+    f = Symbol(:_sym, sn)
     @eval begin
         function $(f)(c::Char)
-            meta = get(char_idx, c, nothing)
-            isnothing(meta) && return c
-            (group_name, i, styles) = meta
-            !haskey(char_groups, group_name) && return c
-            !haskey(char_groups[group_name], $(Meta.quot(sn))) && return c
-            styled_chars = char_groups[group_name][$(Meta.quot(sn))]
-            if i > length(styled_chars)
-                return c
-            end
-            return styled_chars[i]
+            global default_normal_styles_ref, default_substitutions_ref, default_aliases_ref
+
+            return UM.apply_style(c, $(Meta.quot(sn)); 
+                normal_styles = default_normal_styles_ref[],
+                substitutions = default_substitutions_ref[],
+                aliases = default_aliases_ref[]
+            )
         end
         $f(io::IO, x::Char) = print(io, $f(x))
         $f(io::IO, x::AbstractString) = for char in x
