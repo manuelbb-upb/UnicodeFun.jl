@@ -30,3 +30,5 @@ latexstring = "\\bf{boldface} \\it{italic} \\bb{blackboard} \\cal{calligraphic} 
 @test to_root(1, "-1") == "-1"
 
 include("UnicodeMath.jl")
+## UCM.extra_commands:
+@test to_latex("\\mathexclam") == "!"
