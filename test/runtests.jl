@@ -32,3 +32,11 @@ latexstring = "\\bf{boldface} \\it{italic} \\bb{blackboard} \\cal{calligraphic} 
 include("UnicodeMath.jl")
 ## UCM.extra_commands:
 @test to_latex("\\mathexclam") == "!"
+## Normalization (same as calling `UCM._sym`)
+glyphstring = "BX 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 αβ 𝚪𝚵 𝜵 az 𝑎𝑧 𝛤𝛯 𝛻 ∂ 𝛛 ΓΞ 𝛼𝛽 1 𝜞𝜩 𝛂𝛃"
+@test to_latex(glyphstring) == glyphstring
+@test to_latex(glyphstring; normalize=true) == "𝐵𝑋 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 𝛼𝛽 𝚪𝚵 𝛁 𝑎𝑧 𝑎𝑧 ΓΞ ∇ 𝜕 𝝏 ΓΞ 𝛼𝛽 1 𝚪𝚵 𝜶𝜷"
+UnicodeFun.global_config!(; math_style_spec=:iso)
+@test to_latex(glyphstring; normalize=true) == "𝐵𝑋 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 𝛼𝛽 𝜞𝜩 𝛁 𝑎𝑧 𝑎𝑧 𝛤𝛯 ∇ 𝜕 𝝏 𝛤𝛯 𝛼𝛽 1 𝜞𝜩 𝜶𝜷"
+## Additional styling modifiers:
+@test to_latex("\\symit{a}") == "𝑎"

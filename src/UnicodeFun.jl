@@ -3,7 +3,27 @@ module UnicodeFun
 using REPL
 
 include("UnicodeMath/src/UnicodeMath.jl")
-import .UnicodeMath as UCM
+import .UnicodeMath
+const UCM = UnicodeMath
+import .UnicodeMath: UCMConfig, global_config!
+import .UnicodeMath:
+    symbf, 
+    symsf, 
+    symbfsf,
+    symup,
+    symit,
+    symbfup,
+    symbfit,
+    symsfup,
+    symsfit,
+    symbfsfup,
+    symtt,
+    symbb,
+    symbbit,
+    symcal,
+    symbfcal,
+    symfrak,
+    symbffrak
 
 # Here, we collect and reverse the REPL's latex autocompletion map.
 const repl_symbols_unsorted = Dict(
@@ -18,6 +38,27 @@ const ucm_symbols_dict = Dict(
 const symbols_unsorted = merge(ucm_symbols_dict, repl_symbols_unsorted) |> pairs |> collect
 # Build substitution list for `to_latex`:
 const latex_symbol_map = sort!(symbols_unsorted, by=(x)-> length(x[1]), rev=true)
+
+# Style modifiers supported by submodule UnicodeMath, sorted:
+const ucm_modifiers = (
+    "symbf",
+    "symsf",
+    "symup",
+    "symit",
+    "symtt",
+    "symbb",
+    "symcal",
+    "symbfsf",
+    "symbfup",
+    "symbfit",
+    "symsfup",
+    "symsfit",
+    "symbbit",
+    "symfrak",
+    "symbfcal",
+    "symbfsfup",
+    "symbffrak",
+)
 
 include("sub_super_scripts.jl")
 export to_superscript, to_subscript

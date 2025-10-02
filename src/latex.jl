@@ -18,9 +18,55 @@ function print_modifier(io, mod, substring)
     elseif mod == "mono"
         to_mono(io, substring) # leave unmodified for now
     else
-        error("Modifier $mod not supported")
+        _substring = try_sym_modifier(mod, substring) # we could also directly `io` and use `UCM.apply_style` instead of the `sym` commands in `try_sym_modifier`
+        if isnothing(_substring)
+            error("Modifier $mod not supported")
+        end
+        print(io, _substring)
     end
 end
+
+function try_sym_modifier(mod, substring)
+    _substring = if mod == "symbf"
+        symbf(substring)
+    elseif mod == "symsf"
+        symsf(substring)
+    elseif mod=="symup"
+        symup(substring)
+    elseif mod=="symit"
+        symit(substring)
+    elseif mod=="symtt"
+        symtt(substring)
+    elseif mod=="symbb"
+        symbb(substring)
+    elseif mod=="symcal"
+        symcal(substring)
+    elseif mod=="symbfsf"
+        symbfsf(substring)
+    elseif mod=="symbfup"
+        symbfup(substring)
+    elseif mod=="symbfit"
+        symbfit(substring)
+    elseif mod=="symsfup"
+        symsfup(substring)
+    elseif mod=="symsfit"
+        symsfit(substring)
+    elseif mod=="symbbit"
+        symbbit(substring)
+    elseif mod=="symfrak"
+        symfrak(substring)
+    elseif mod=="symbfcal"
+        symbfcal(substring)
+    elseif mod=="symbfsfup"
+        symbfsfup(substring)
+    elseif mod=="symbffrak"
+        symbffrak(substring)
+    else
+        nothing
+    end
+    return _substring
+end
+
 """
 Base findnext doesn't handle utf8 strings correctly
 """
@@ -35,7 +81,7 @@ function utf8_findnext(A::AbstractString, v::Char, idx::Integer)
     0
 end
 
-function to_latex(text)
+function to_latex(text; normalize=false)
     io = IOBuffer()
     charidx = iterate(text)
     charidx === nothing && return ""
@@ -51,6 +97,12 @@ function to_latex(text)
             if mod == "\\"
                 ss = SubString(text, idx, lastindex(text))
                 for mod_candidate in ("bb", "bfit", "bf", "it", "cal", "frak", "mono")  # `bfit` has to come before `bf`
+                    if startswith(ss, mod_candidate)
+                        mod = mod_candidate
+                        break
+                    end
+                end
+                for mod_candidate in ucm_modifiers
                     if startswith(ss, mod_candidate)
                         mod = mod_candidate
                         break
@@ -86,7 +138,11 @@ function to_latex(text)
                 print_modifier(io, mod, char)
             end
         else
-            print(io, char)
+            if normalize
+                print(io, UCM._sym(char))
+            else
+                print(io, char)
+            end
         end
     end
     return String(take!(io))
