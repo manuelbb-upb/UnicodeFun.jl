@@ -28,3 +28,5 @@ latexstring = "\\bf{boldface} \\it{italic} \\bb{blackboard} \\cal{calligraphic} 
 @test to_root(17,"542") == "¹⁷√5̅4̅2̅"
 @test to_root(1, "1") == "1"
 @test to_root(1, "-1") == "-1"
+
+include("UnicodeMath.jl")

@@ -2,6 +2,9 @@ module UnicodeFun
 
 using REPL
 
+include("UnicodeMath/src/UnicodeMath.jl")
+import .UnicodeMath as UCM
+
 # Here, we collect and reverse the REPL's latex autocompletion map.
 const symbols_unsorted = [k[2:end] => v[1] for (k, v) in REPL.REPLCompletions.latex_symbols]
 
