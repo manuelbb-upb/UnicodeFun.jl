@@ -37,15 +37,15 @@ to_latex
 
 There are additional styling commands and functions in the `UnicodeMath` submodule. The submodule has its own README.
 ```julia-repl
-julia>to_latex("\\symtt{mono}")
+julia> to_latex("\\symtt{mono}")
 "𝚖𝚘𝚗𝚘"
 ```
 Normalization can be enabled with the `to_latex` function so that latin and greek letters adhere to certain styling standards:
 ```julia-repl
-julia>glyphstring = "BX 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 αβ 𝚪𝚵 𝜵 az 𝑎𝑧 𝛤𝛯 𝛻 ∂ 𝛛 ΓΞ 𝛼𝛽 1 𝜞𝜩 𝛂𝛃"
-julia>to_latex(glyphstring; normalize=true) # `:tex` standard
+julia> glyphstring = "BX 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 αβ 𝚪𝚵 𝜵 az 𝑎𝑧 𝛤𝛯 𝛻 ∂ 𝛛 ΓΞ 𝛼𝛽 1 𝜞𝜩 𝛂𝛃"
+julia> to_latex(glyphstring; normalize=true) # `:tex` standard
 "𝐵𝑋 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 𝛼𝛽 𝚪𝚵 𝛁 𝑎𝑧 𝑎𝑧 ΓΞ ∇ 𝜕 𝝏 ΓΞ 𝛼𝛽 1 𝚪𝚵 𝜶𝜷"
-julia>UnicodeFun.global_config!(; math_style_spec=:iso)
+julia> UnicodeFun.global_config!(; math_style_spec=:iso)
 "𝐵𝑋 𝐵𝑋 ∇ 𝛁 𝜕 𝝏 𝜶𝜷 𝛼𝛽 𝜞𝜩 𝛁 𝑎𝑧 𝑎𝑧 𝛤𝛯 ∇ 𝜕 𝝏 𝛤𝛯 𝛼𝛽 1 𝜞𝜩 𝜶𝜷"
 ```
 
